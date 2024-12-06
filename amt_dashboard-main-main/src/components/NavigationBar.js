@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { useNavigate } from "react-router-dom"; // Importar o useNavigate
 import logo from "../logo_amt.svg";
 import { MenuOptions } from "./MenuOptions";
 import { ChooseFileModal } from "../components/ChooseFileModal";
+import axios from "axios";
 
 import UploadFileIcon from "../icons/upload_file.svg";
 import ExportDashboardIcon from "../icons/export_dashboard.svg";
@@ -17,10 +19,11 @@ import UserIcon from "../icons/person_icon.svg";
 export function NavigationBar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const navigate = useNavigate(); // Hook para navegar entre rotas
+
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
 
-  // Função para exportar a página como PDF
   const exportDashboardAsPDF = () => {
     const dashboardElement = document.getElementById("dashboard-container");
   
@@ -29,25 +32,38 @@ export function NavigationBar() {
       return;
     }
   
-    // Captura o elemento como imagem
+    const totalHeight = dashboardElement.scrollHeight;
+    const totalWidth = dashboardElement.scrollWidth;
+  
     html2canvas(dashboardElement, {
-      backgroundColor: getComputedStyle(dashboardElement).backgroundColor || "#38A3A5", // Garante o fundo
-      scale: 2, // Aumenta a resolução
-      useCORS: true, // Permite capturar imagens externas (se aplicável)
+      backgroundColor: getComputedStyle(dashboardElement).backgroundColor || "#38A3A5",
+      scale: 2,
+      useCORS: true,
+      width: totalWidth,
+      height: totalHeight,
+      x: 0,
+      y: 0,
     }).then((canvas) => {
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("landscape", "mm", "a4");
-  
-      // Dimensões do PDF com base no canvas
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-  
+      const pdfHeight = pdf.internal.pageSize.getHeight();
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
       pdf.save("dashboard.pdf");
+    }).catch((error) => {
+      console.error("Erro ao capturar o conteúdo do dashboard: ", error);
     });
   };
-  
-  
+
+  const resetDashboardData = async () => {
+    try {
+      const response = await axios.post("http://localhost:5000/reset_dados");
+      alert(response.data.message);
+    } catch (error) {
+      console.error("Erro ao resetar os dados", error);
+      alert("Erro ao resetar os dados.");
+    }
+  };
 
   const menuItems = [
     {
@@ -58,7 +74,7 @@ export function NavigationBar() {
     {
       icon: ExportDashboardIcon,
       option: "exportar dashboard",
-      onClick: exportDashboardAsPDF, // Adicionado o manipulador de clique
+      onClick: exportDashboardAsPDF,
     },
     {
       icon: GenerateReportIcon,
@@ -70,7 +86,12 @@ export function NavigationBar() {
       option: "registro de eventos",
       to: "/eventregister",
     },
-    { icon: ResetDashboard, option: "resetar dashboard", spaceBetween: true },
+    {
+      icon: ResetDashboard,
+      option: "resetar dashboard",
+      onClick: resetDashboardData,
+      spaceBetween: true
+    },
   ];
 
   return (
@@ -94,12 +115,16 @@ export function NavigationBar() {
             to={item.to}
             showDivider={item.showDivider}
             spaceBetween={item.spaceBetween}
-            onClick={item.onClick} // Pass the onClick handler if provided
+            onClick={item.onClick}
           />
         ))}
       </div>
       <div className="mt-auto">
-        <MenuOptions icon={DashboardIcon} option="voltar para o dashboard" />
+        <MenuOptions 
+          icon={DashboardIcon} 
+          option="voltar para o dashboard" 
+          onClick={() => navigate("/")} // Redireciona para o dashboard
+        />
         <MenuOptions icon={LogoutIcon} option="logout" />
         <MenuOptions icon={UserIcon} option="usuário" />
       </div>

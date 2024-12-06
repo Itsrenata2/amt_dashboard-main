@@ -203,7 +203,7 @@ export const DataDisplay = () => {
               ))}
             </select>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 max-w-full mx-auto">
             <div className="flex flex-col gap-6">
               <div className="bg-white shadow rounded-lg p-10 content-center">
                 <h3 className="text-secondary">Ano de coleta</h3>

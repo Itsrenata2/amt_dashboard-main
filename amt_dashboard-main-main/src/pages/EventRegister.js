@@ -50,7 +50,7 @@ export function EventRegister() {
   return (
     <>
       <div>
-        <div className="bg-secondary h-screen min-h-screen w-screen font-outfit font-bold">
+        <div className="bg-secondary min-h-screen font-outfit font-bold">
           <div className="flex flex-col">
             <h1 className="mt-6 ml-8 mb-6 text-white uppercase">
               Registro de Eventos
