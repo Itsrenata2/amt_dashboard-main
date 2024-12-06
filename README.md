@@ -35,6 +35,7 @@ Dentro pasta do projeto principal rode:
 ```
 npm install tailwindcss
 npm install react-scripts
+npm install html2canvas jspdf
 ```
 
 ### 3. **Instalar as bibliotecas necessárias (BackEnd)**
