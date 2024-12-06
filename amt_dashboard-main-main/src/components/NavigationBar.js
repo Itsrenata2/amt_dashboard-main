@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import logo from "../logo_amt.svg";
 import { MenuOptions } from "./MenuOptions";
 import { ChooseFileModal } from "../components/ChooseFileModal";
@@ -18,14 +20,51 @@ export function NavigationBar() {
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
 
+  // Função para exportar a página como PDF
+  const exportDashboardAsPDF = () => {
+    const dashboardElement = document.getElementById("dashboard-container");
+  
+    if (!dashboardElement) {
+      console.error("Dashboard container not found.");
+      return;
+    }
+  
+    // Captura o elemento como imagem
+    html2canvas(dashboardElement, {
+      backgroundColor: getComputedStyle(dashboardElement).backgroundColor || "#38A3A5", // Garante o fundo
+      scale: 2, // Aumenta a resolução
+      useCORS: true, // Permite capturar imagens externas (se aplicável)
+    }).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("landscape", "mm", "a4");
+  
+      // Dimensões do PDF com base no canvas
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+  
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save("dashboard.pdf");
+    });
+  };
+  
+  
+
   const menuItems = [
     {
       icon: UploadFileIcon,
       option: "escolher arquivo",
       onClick: handleOpenModal,
     },
-    { icon: ExportDashboardIcon, option: "exportar dashboard" },
-    { icon: GenerateReportIcon, option: "gerar relatório", showDivider: true },
+    {
+      icon: ExportDashboardIcon,
+      option: "exportar dashboard",
+      onClick: exportDashboardAsPDF, // Adicionado o manipulador de clique
+    },
+    {
+      icon: GenerateReportIcon,
+      option: "gerar relatório",
+      showDivider: true,
+    },
     {
       icon: EventsRegistrationIcon,
       option: "registro de eventos",

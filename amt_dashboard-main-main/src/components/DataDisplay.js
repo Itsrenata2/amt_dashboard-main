@@ -27,14 +27,17 @@ ChartJS.register(
 );
 
 export const DataDisplay = () => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState([]); // Todos os dados
+  const [filteredData, setFilteredData] = useState([]); // Dados filtrados
+  const [filter, setFilter] = useState(""); // Valor do filtro selecionado
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get("http://127.0.0.1:5000/dados");
-        setData(response.data);
+        setData(response.data); // Armazena todos os dados
+        setFilteredData(response.data); // Exibe todos os dados inicialmente
         setError(null);
       } catch (error) {
         setError("Error fetching data");
@@ -44,6 +47,18 @@ export const DataDisplay = () => {
 
     fetchData();
   }, []);
+
+  const handleFilterChange = (selectedFilter) => {
+    setFilter(selectedFilter);
+
+    // Aplica o filtro ou mostra todos os dados
+    if (selectedFilter === "") {
+      setFilteredData(data); // Mostra todos os dados
+    } else {
+      const filtered = data.filter((item) => item.tipo_residuo === selectedFilter);
+      setFilteredData(filtered); // Mostra apenas os dados filtrados
+    }
+  };
 
   const calcMonthlyAverageTotal = (data) => {
     const months = [
@@ -65,6 +80,22 @@ export const DataDisplay = () => {
     return monthlyAverage.toFixed(2); 
   };
 
+  const calcResiduePerPerson = (data) => {
+    const totalPopulation = 212583750; // População usada no cálculo
+    const totalResidue = data.reduce((sum, row) => {
+      const values = Object.values(row).filter((value) => !isNaN(parseFloat(value)));
+      return sum + values.reduce((subSum, value) => subSum + parseFloat(value), 0);
+    }, 0);
+    return (totalResidue / totalPopulation).toFixed(2);
+  };
+
+  const calcTotalResidueGenerated = (data) => {
+    return data.reduce((sum, row) => {
+      const values = Object.values(row).filter((value) => !isNaN(parseFloat(value)));
+      return sum + values.reduce((subSum, value) => subSum + parseFloat(value), 0);
+    }, 0).toFixed(2);
+  };
+
   const processTotalYearlyData = (data) => {
     const yearlyData = data.map((row) => {
       const monthlyValues = Object.entries(row).filter(
@@ -78,7 +109,7 @@ export const DataDisplay = () => {
     return yearlyData;
   };
 
-  const totalYearlyData = processTotalYearlyData(data);
+  const totalYearlyData = processTotalYearlyData(filteredData);
 
   const processBarChartData = (data) => {
     const labels = data.map((row) => row.tipo_residuo);
@@ -134,16 +165,7 @@ export const DataDisplay = () => {
             "rgba(255, 99, 132, 0.5)", 
             "rgba(54, 162, 235, 0.5)", 
             "rgba(255, 206, 86, 0.5)", 
-            "rgba(75, 192, 192, 0.5)", 
-            "rgba(153, 102, 255, 0.5)", 
-            "rgba(255, 159, 64, 0.5)", 
-            "rgba(231, 76, 60, 0.5)", 
-            "rgba(52, 152, 219, 0.5)", 
-            "rgba(241, 196, 15, 0.5)", 
-            "rgba(46, 204, 113, 0.5)", 
-            "rgba(155, 89, 182, 0.5)", 
-            "rgba(241, 196, 15, 0.5)", 
-            "rgba(52, 152, 219, 0.5)"
+            "rgba(75, 192, 192, 0.5)"
           ],
         },
       ],
@@ -151,85 +173,72 @@ export const DataDisplay = () => {
   };
 
   const barChartData = processBarChartData(totalYearlyData);
-  const lineChartData = processLineChartData(data);
+  const lineChartData = processLineChartData(filteredData);
   const doughnutChartData = processDoughnutChartData(totalYearlyData);
 
-  const total = data
-    .filter(item => item.tipo_residuo === "TOTAL")
-    .reduce((sum, item)  => {
-      return sum + Object.entries(item)
-        .filter(([key, value]) => !isNaN(parseFloat(value)))
-        .reduce((subSum, [key, value]) => subSum + parseFloat(value), 0);
-    }, 0);
-
-  const totalRounded = Math.round(total);
-
   const year = data.length > 0 ? data[0].ano : "Ano não disponível";
-
-  const numPeople = 212583750; 
-
-  const residuePerPerson = total / numPeople;
-  const residuePerPersonRounded = residuePerPerson.toFixed(2); // Com 2 casas decimais
-
-  const averageMonthlyTotal = calcMonthlyAverageTotal(data);
+  const averageMonthlyTotal = calcMonthlyAverageTotal(filteredData);
+  const residuePerPerson = calcResiduePerPerson(filteredData);
+  const totalResidueGenerated = calcTotalResidueGenerated(filteredData);
 
   return (
-    <div className="p-6 font-sans">
+    <div className="p-6 font-outfit lowercase">
       {error ? (
         <div className="text-red-500 text-center">Error: {error}</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          <div className="flex flex-col gap-6"> 
-            {/* Period Time */}
-            <div className="bg-white shadow rounded-lg p-10 content-center">
-              <h3 className="text-secondary text-md font-outfit font-semibold lowercase">Ano de coleta dos dados</h3>
-              <p className="text-primary text-2xl font-outfit">{year}</p> 
+        <>
+          <div className="mb-6">
+            <label htmlFor="filter" className="mr-2 text-white">Filtrar por tipo de resíduo:</label>
+            <select
+              id="filter"
+              value={filter}
+              onChange={(e) => handleFilterChange(e.target.value)}
+              className="p-2 border rounded"
+            >
+              <option value="" className="text-secondary lowercase">Todos</option>
+              {data.map((item, index) => (
+                <option key={index} value={item.tipo_residuo} className="text-secondary lowercase">
+                  {item.tipo_residuo}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="flex flex-col gap-6">
+              <div className="bg-white shadow rounded-lg p-10 content-center">
+                <h3 className="text-secondary">Ano de coleta</h3>
+                <p className="text-primary text-2xl">{year}</p>
+              </div>
+              <div className="bg-white shadow rounded-lg p-10 content-center">
+                <h3 className="text-secondary">Total de resíduos gerados</h3>
+                <p className="text-primary text-2xl">{totalResidueGenerated} kg</p>
+              </div>
+            </div>
+            <div className="bg-white shadow rounded-lg p-4">
+              <h3 className="text-secondary">Gráfico de Resíduos</h3>
+              <Bar data={barChartData} options={{ responsive: true }} />
+            </div>
+            <div className="bg-white shadow rounded-lg p-4">
+              <h3 className="text-secondary">Evolução Mensal</h3>
+              <Line data={lineChartData} options={{ responsive: true }} />
+            </div>
+            <div className="bg-white shadow rounded-lg row-span-2 p-4">
+              <h3 className="text-secondary">Proporção de Resíduos</h3>
+              <Doughnut data={doughnutChartData} options={{ responsive: true }} />
+            </div>
+            <div className="flex flex-col gap-6">
+              <div className="bg-white shadow rounded-lg p-10 content-center">
+                <h3 className="text-secondary">Média mensal geral de coleta</h3>
+                <p className="text-primary text-2xl">{averageMonthlyTotal} <span className="text-secondary">/mês</span></p>
+              </div>
+              <div className="bg-white shadow rounded-lg p-10 content-center">
+                <h3 className="text-secondary">Taxa de coleta por pessoa</h3>
+                <p className="text-primary text-xl">{residuePerPerson} <span className="text-secondary">/hab</span></p>
+              </div>
             </div>
             
-            {/* Total Count */}
-            <div className="bg-white shadow rounded-lg p-10 content-center">
-              <h3 className="text-secondary text-md font-outfit font-semibold lowercase">Total de resíduos processados</h3>
-              <p className="text-primary text-2xl font-outfit">
-                {totalRounded}
-              </p>
-            </div>
           </div>
-
-          {/* Residue Type Chart */}
-          <div className="bg-white shadow rounded-lg p-4">
-            <h3 className="text-secondary text-md font-outfit font-semibold lowercase">Tipos de resíduo</h3>
-            <Bar data={barChartData} options={{ responsive: true }} />
-          </div>
-
-          {/* Residue Evolution Chart */}
-          <div className="bg-white shadow rounded-lg p-4">
-            <h3 className="text-secondary text-md font-outfit font-semibold lowercase">Evolução dos tipos de resíduo ao longo do ano</h3>
-            <Line data={lineChartData} options={{ responsive: true }} />
-          </div>
-
-          {/* Residue Proportion */}
-          <div className="bg-white shadow rounded-lg p-4 md:col-span-1 xl:col-span-2">
-            <h3 className="text-secondary text-md font-outfit font-semibold lowercase">Proporção de Resíduos</h3>
-            <Doughnut data={doughnutChartData} options={{ responsive: true }} />
-          </div>
-
-          <div className="flex flex-col gap-6">          
-            {/* Residue per person */}
-            <div className="bg-white shadow rounded-lg p-10 content-center">
-              <h3 className="text-secondary text-md font-outfit font-semibold lowercase">Resíduo gerado por habitante</h3>
-              <p className="text-primary text-2xl font-outfit">
-                {residuePerPersonRounded} <span className="text-secondary text-md">/hab</span>
-              </p>
-
-            </div>
-
-            {/* Monthly average */}
-            <div className="bg-white shadow rounded-lg p-10 content-center">
-              <h3 className="text-secondary text-md font-outfit font-semibold lowercase">Média Mensal Geral de Coleta</h3>
-              <p className="text-primary text-2xl font-outfit">{averageMonthlyTotal} <span className="text-secondary text-md">/mês</span></p>
-            </div>
-          </div>
-        </div>
+        </>
       )}
     </div>
   );
