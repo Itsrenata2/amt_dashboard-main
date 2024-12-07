@@ -9,7 +9,7 @@ export const ChooseFileModal = ({ isOpen, onClose, onFileSelect }) => {
     const selectedFile = event.target.files[0];
     if (selectedFile && selectedFile.type === "text/csv") {
       setFile(selectedFile);
-      setErrorMessage(""); // Clear any previous error
+      setErrorMessage(""); 
     } else {
       setErrorMessage("Selecione um arquivo válido (.csv).");
     }
@@ -36,10 +36,7 @@ export const ChooseFileModal = ({ isOpen, onClose, onFileSelect }) => {
       );
       console.log("File uploaded successfully:", response.data);
 
-      // Pass the file to the parent component if needed
-      // onFileSelect(file);
-
-      onClose(); // Close the modal after successful upload
+      onClose(); 
     } catch (error) {
       console.error("Erro ao enviar o arquivo:", error);
       setErrorMessage("Falha ao enviar o arquivo. Tente novamente.");

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { useNavigate } from "react-router-dom"; // Importar o useNavigate
+import { useNavigate } from "react-router-dom"; 
 import logo from "../logo_amt.svg";
 import { MenuOptions } from "./MenuOptions";
 import { ChooseFileModal } from "../components/ChooseFileModal";
@@ -19,7 +19,7 @@ import UserIcon from "../icons/person_icon.svg";
 export function NavigationBar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const navigate = useNavigate(); // Hook para navegar entre rotas
+  const navigate = useNavigate();
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
@@ -123,7 +123,7 @@ export function NavigationBar() {
         <MenuOptions 
           icon={DashboardIcon} 
           option="voltar para o dashboard" 
-          onClick={() => navigate("/")} // Redireciona para o dashboard
+          onClick={() => navigate("/")} 
         />
         <MenuOptions icon={LogoutIcon} option="logout" />
         <MenuOptions icon={UserIcon} option="usuário" />

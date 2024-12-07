@@ -21,8 +21,7 @@ def inserir_dados_no_banco(df, file_id, ano):
                 ano
             ]
 
-            # Verificar os valores que estão sendo inseridos
-            print(f"Valores para inserção no banco: {valores}")  # Depuração
+            print(f"Valores para inserção no banco: {valores}") 
             
             cursor.execute(query, tuple(valores))
         

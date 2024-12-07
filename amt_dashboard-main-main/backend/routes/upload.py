@@ -19,16 +19,12 @@ def upload_file():
     for file in files:
         if file and file.filename.endswith('.csv'):
             try:
-                # Ler o arquivo CSV
                 df = pd.read_csv(file, encoding='ISO-8859-1', delimiter=';')
                 
-                # Normalizar o DataFrame
                 df = normalize_dataframe(df)
                 
-                # Extrair o ano do nome do arquivo
                 ano = int(file.filename[-8:-4])
 
-                # Inserir os dados no banco
                 inserir_dados_no_banco(df, str(uuid.uuid4()), ano)
                 success_files.append(file.filename)
             except Exception as e:

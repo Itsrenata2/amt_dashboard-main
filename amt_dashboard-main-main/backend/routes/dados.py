@@ -13,15 +13,12 @@ def get_dados():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Meses para filtrar
     month_columns = ['janeiro', 'fevereiro', 'marco', 'abril', 'maio', 'junho', 
                      'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
 
-    # Construção da consulta SQL base
     query = "SELECT ano, tipo_residuo, "
     params = []
 
-    # Verifique o intervalo de meses
     if mes_inicio and mes_fim:
         start_index = month_columns.index(mes_inicio)
         end_index = month_columns.index(mes_fim) + 1
@@ -34,21 +31,19 @@ def get_dados():
         selected_months = [mes_fim]
         query += mes_fim
     else:
-        selected_months = month_columns  # Se nenhum mês for especificado, selecione todos
+        selected_months = month_columns  
         query += ', '.join(month_columns)
 
     query += " FROM coleta_residuos WHERE 1=1"
 
-    # Filtro por ano
     if year:
         query += " AND ano = %s"
         params.append(year)
 
-    # Filtro por tipo de resíduo
     if tipos_residuo:
-        placeholders = ', '.join(['%s'] * len(tipos_residuo))  # Cria os placeholders
+        placeholders = ', '.join(['%s'] * len(tipos_residuo)) 
         query += f" AND tipo_residuo IN ({placeholders})"
-        params.extend(tipos_residuo)  # Adiciona cada tipo de resíduo separadamente
+        params.extend(tipos_residuo)
 
     try:
         cursor.execute(query, tuple(params))

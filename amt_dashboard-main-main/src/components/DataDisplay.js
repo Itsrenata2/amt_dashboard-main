@@ -27,17 +27,17 @@ ChartJS.register(
 );
 
 export const DataDisplay = () => {
-  const [data, setData] = useState([]); // Todos os dados
-  const [filteredData, setFilteredData] = useState([]); // Dados filtrados
-  const [filter, setFilter] = useState(""); // Valor do filtro selecionado
+  const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]); 
+  const [filter, setFilter] = useState("");
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get("http://127.0.0.1:5000/dados");
-        setData(response.data); // Armazena todos os dados
-        setFilteredData(response.data); // Exibe todos os dados inicialmente
+        setData(response.data); 
+        setFilteredData(response.data); 
         setError(null);
       } catch (error) {
         setError("Error fetching data");
@@ -51,12 +51,11 @@ export const DataDisplay = () => {
   const handleFilterChange = (selectedFilter) => {
     setFilter(selectedFilter);
 
-    // Aplica o filtro ou mostra todos os dados
     if (selectedFilter === "") {
-      setFilteredData(data); // Mostra todos os dados
+      setFilteredData(data); 
     } else {
       const filtered = data.filter((item) => item.tipo_residuo === selectedFilter);
-      setFilteredData(filtered); // Mostra apenas os dados filtrados
+      setFilteredData(filtered); 
     }
   };
 
@@ -81,7 +80,7 @@ export const DataDisplay = () => {
   };
 
   const calcResiduePerPerson = (data) => {
-    const totalPopulation = 212583750; // População usada no cálculo
+    const totalPopulation = 212583750; 
     const totalResidue = data.reduce((sum, row) => {
       const values = Object.values(row).filter((value) => !isNaN(parseFloat(value)));
       return sum + values.reduce((subSum, value) => subSum + parseFloat(value), 0);
